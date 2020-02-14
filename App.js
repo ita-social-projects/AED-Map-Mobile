@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 
 MapboxGL.setAccessToken(
@@ -9,51 +9,96 @@ MapboxGL.setAccessToken(
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
   },
   container: {
-    height: '100%',
+    flex: 1,
     width: '100%',
     backgroundColor: 'green',
   },
   map: {
     flex: 1,
   },
+  popupText: {
+    fontSize: 20,
+  },
+  popupOuter: {
+    flex: 1,
+    backgroundColor: '#fff',
+    width: '100%',
+    borderWidth: 1,
+    borderTopColor: '#000',
+    height: 600,
+  },
 });
 
 const App = () => {
-  const [mapCenter, setMapCenter] = useState({
+  const [state, setState] = useState({
     coords: [24.031610977781128, 49.84180396191118],
     zoom: 13,
-    centeredOnUser: false,
   });
-
-  const someEvent = event => {
-    console.log(MapboxGL.Camera);
-  };
+  const [isUserLocationSet, setIsUserLocationSet] = useState(false);
+  const [isPopupShown, setIsPopupShown] = useState(false);
 
   const userLocationUpdate = event => {
-    const {coords} = event;
-    setMapCenter({
-      coords: [coords.longitude, coords.latitude],
-      centeredOnUser: true,
-      zoom: 13,
+    if (!isUserLocationSet) {
+      const {coords} = event;
+      setState({
+        coords: [coords.longitude, coords.latitude],
+        zoom: 16,
+      });
+      setIsUserLocationSet(true);
+      console.log('new coords');
+    }
+  };
+
+  const longMapPress = event => {
+    const {coordinates} = event.geometry;
+    console.log(coordinates);
+    setState({
+      coords: coordinates,
+      zoom: 16,
     });
+    setIsPopupShown(true);
+    console.log(isPopupShown);
+  };
+  const shortMapPress = event => {
+    setIsPopupShown(false);
   };
 
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <MapboxGL.MapView style={styles.map} onLongPress={someEvent}>
+        <MapboxGL.MapView
+          style={styles.map}
+          onLongPress={longMapPress}
+          onPress={shortMapPress}
+          compassEnabled={true}>
           <MapboxGL.Camera
-            centerCoordinate={mapCenter.coords}
-            zoomLevel={mapCenter.zoom}
+            centerCoordinate={state.coords}
+            zoomLevel={state.zoom}
           />
           <MapboxGL.UserLocation visible={true} onUpdate={userLocationUpdate} />
         </MapboxGL.MapView>
       </View>
+      {isPopupShown && (
+        <View style={styles.popupOuter}>
+          <Text style={styles.popupText}>
+            Something that will be shown in popup
+          </Text>
+          <Text style={styles.popupText}>
+            Something that will be shown in popup
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
