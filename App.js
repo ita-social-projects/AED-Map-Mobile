@@ -22,19 +22,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-const someEvent = event => {
-  console.log(MapboxGL.Camera);
-};
 
-const userLocationUpdate = event => {
-  console.log(event);
-};
 const App = () => {
   const [mapCenter, setMapCenter] = useState({
     coords: [24.031610977781128, 49.84180396191118],
     zoom: 13,
     centeredOnUser: false,
   });
+
+  const someEvent = event => {
+    console.log(MapboxGL.Camera);
+  };
+
+  const userLocationUpdate = event => {
+    const {coords} = event;
+    setMapCenter({
+      coords: [coords.longitude, coords.latitude],
+      centeredOnUser: true,
+      zoom: 13,
+    });
+  };
+
   return (
     <View style={styles.page}>
       <View style={styles.container}>
