@@ -2,14 +2,15 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Animated} from 'react-native';
 import MapboxGL from '@react-native-mapbox-gl/maps';
-import getDefs from './defs';
-import createGeoJsonFeatureCollection from './createGeoJsonFeatureCollection';
-import SYMBOL_LAYOUT from './layouts/SYMBOL_LAYOUT';
-import DESTINATION_LAYOUT from './layouts/DESTINATION_LAYOUT';
-
-import DIR_LAYOUT from './layouts/DIR_LAYOUT';
-import createDirReq from './createDirectionRequest';
 import polyline from '@mapbox/polyline';
+import createDirReq from './createDirectionRequest';
+
+import Popup from './modules/MapHolder/components/Popup';
+import Camera from './modules/MapHolder/components/Camera';
+
+import DefPinLayer from './modules/MapHolder/layers/DefPinLayer';
+import DirectionLinesLayer from './modules/MapHolder/layers/DirectionLinesLayer';
+import OriginDestPinsLayer from './modules/MapHolder/layers/OriginDestPinsLayer';
 
 MapboxGL.setAccessToken(
   'pk.eyJ1Ijoib3Nrb3ZiYXNpdWsiLCJhIjoiY2s1NWVwcnhhMDhrazNmcGNvZjJ1MnA4OSJ9.56GsGp2cl6zpYh-Ns8ThxA'
@@ -20,21 +21,19 @@ const App = () => {
     coordinates: [24.031610977781128, 49.84180396191118],
     zoom: 13
   });
+
   const [userLocation, setUserLocation] = useState(false);
   const [popupData, setPopupData] = useState(false);
   const [directionData, setDirectionData] = useState(null);
-  const [popupValue] = useState(new Animated.ValueXY({x: 0, y: 0}));
   const [directionValue] = useState(new Animated.ValueXY({x: -100, y: 0}));
+
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
+
   const [originDestCollection, setODCollection] = useState({
     type: 'FeatureCollection',
     features: []
   });
-
-  useEffect(() => {
-    slidePopupWindow();
-  }, [popupData]);
 
   useEffect(() => {
     slideDirectionWindow();
@@ -65,22 +64,11 @@ const App = () => {
     const data = await res.json();
 
     const geoData = polyline.toGeoJSON(data.routes[0].geometry);
-    console.log(geoData);
+    // console.log(geoData);
+    geoData.coordinates.unshift(start);
+    geoData.coordinates.push(end);
+    // return geoData;
     setDirectionData(geoData);
-  };
-
-  const slidePopupWindow = () => {
-    if (popupData) {
-      Animated.spring(popupValue, {
-        toValue: {x: 0, y: -300},
-        speed: 20
-      }).start();
-    } else {
-      Animated.spring(popupValue, {
-        toValue: {x: 0, y: 0},
-        speed: 20
-      }).start();
-    }
   };
 
   const slideDirectionWindow = () => {
@@ -105,7 +93,6 @@ const App = () => {
         zoom: 16
       });
       setUserLocation([coords.longitude, coords.latitude]);
-      console.log('new coords');
     }
   };
 
@@ -144,29 +131,10 @@ const App = () => {
     buildDir(origin, destination, type);
   };
 
-  const defsFeaturesData = createGeoJsonFeatureCollection(getDefs());
-
   const shortMapPress = event => {
     setPopupData(null);
   };
 
-  const defPinPress = ({nativeEvent}) => {
-    const feature = nativeEvent.payload;
-    const {coordinates} = feature.geometry;
-
-    setMapParameters({
-      coordinates,
-      zoom: 16
-    });
-
-    setPopupData({
-      coordinates,
-      data: {
-        someText: feature.properties.title
-      }
-    });
-    slidePopupWindow();
-  };
   return (
     <View style={styles.page}>
       <View style={styles.mapContainer}>
@@ -179,44 +147,15 @@ const App = () => {
             setMapParameters(null);
           }}
         >
-          {mapParameters && (
-            <MapboxGL.Camera
-              centerCoordinate={mapParameters.coordinates}
-              zoomLevel={mapParameters.zoom}
-              animationDuration={1000}
-            />
-          )}
+          <Camera mapParameters={mapParameters} />
 
-          <MapboxGL.ShapeSource
-            id="defPins"
-            shape={defsFeaturesData}
-            onPress={defPinPress}
-          >
-            <MapboxGL.SymbolLayer
-              id="defPinsSymbolsLayer"
-              style={SYMBOL_LAYOUT}
-            />
-          </MapboxGL.ShapeSource>
+          <DefPinLayer
+            setMapParameters={setMapParameters}
+            setPopupData={setPopupData}
+          />
 
-          {originDestCollection.features.length > 0 && (
-            <MapboxGL.ShapeSource id="dest" shape={originDestCollection}>
-              <MapboxGL.SymbolLayer
-                id="destSymbolLayer"
-                style={DESTINATION_LAYOUT}
-                belowLayerID="defPinsSymbolsLayer"
-              />
-            </MapboxGL.ShapeSource>
-          )}
-
-          {directionData && (
-            <MapboxGL.ShapeSource id="dir" shape={directionData}>
-              <MapboxGL.LineLayer
-                id="dirPinsLayer"
-                style={DIR_LAYOUT}
-                belowLayerID="destSymbolLayer"
-              />
-            </MapboxGL.ShapeSource>
-          )}
+          <DirectionLinesLayer directionData={directionData} />
+          <OriginDestPinsLayer originDestCollection={originDestCollection} />
 
           {/* <MapboxGL.UserLocation
             onPress={shortMapPress}
@@ -225,21 +164,7 @@ const App = () => {
           /> */}
         </MapboxGL.MapView>
       </View>
-
-      <Animated.View style={[styles.popupOuter, popupValue.getLayout()]}>
-        <View style={styles.popupHandle} />
-        {popupData && (
-          <>
-            <Text style={styles.popupText}>{popupData.data.someText}</Text>
-            <Text style={styles.popupText}>
-              Lng: {popupData.coordinates[0]}
-            </Text>
-            <Text style={styles.popupText}>
-              Lat: {popupData.coordinates[1]}
-            </Text>
-          </>
-        )}
-      </Animated.View>
+      <Popup popupData={popupData} />
 
       <Animated.View style={[styles.driveTypes, directionValue.getLayout()]}>
         <TouchableOpacity
@@ -292,26 +217,6 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1
-  },
-  popupOuter: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    backgroundColor: '#282c34',
-    borderWidth: 1,
-    borderTopColor: '#000',
-    padding: 10
-  },
-  popupHandle: {
-    backgroundColor: '#fff',
-    width: 30,
-    height: 2,
-    alignSelf: 'center',
-    marginVertical: 10
-  },
-  popupText: {
-    fontSize: 21,
-    color: '#fcfcfc'
   },
   driveTypes: {
     padding: 15,

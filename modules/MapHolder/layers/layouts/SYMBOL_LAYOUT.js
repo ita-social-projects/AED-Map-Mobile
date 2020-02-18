@@ -1,4 +1,4 @@
-import mapPin from '../content/images/pinIcon.png';
+import mapPin from '../../../../content/images/pinIcon.png';
 
 const SYMBOL_LAYOUT = {
   iconImage: mapPin,
