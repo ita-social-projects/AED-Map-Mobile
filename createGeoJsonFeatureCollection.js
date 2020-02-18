@@ -1,10 +1,8 @@
-/* eslint-disable no-underscore-dangle */
-
 const features = points => {
   return points.map(point => {
     return {
       type: 'Feature',
-      id: point._id,
+      id: point.id,
       geometry: {
         type: point.location.type,
         coordinates: point.location.coordinates

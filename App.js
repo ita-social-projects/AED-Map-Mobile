@@ -1,16 +1,19 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Animated} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import MapboxGL from '@react-native-mapbox-gl/maps';
-import polyline from '@mapbox/polyline';
-import createDirReq from './createDirectionRequest';
-
-import Popup from './modules/MapHolder/components/Popup';
+import Popup from './modules/Popup';
 import Camera from './modules/MapHolder/components/Camera';
-
 import DefPinLayer from './modules/MapHolder/layers/DefPinLayer';
 import DirectionLinesLayer from './modules/MapHolder/layers/DirectionLinesLayer';
-import OriginDestPinsLayer from './modules/MapHolder/layers/OriginDestPinsLayer';
+import DestinatonPinLayer from './modules/MapHolder/layers/DestinatonPinLayer';
+import requestGeoLocationPermission from './locationAccess';
+import Geolocation from 'react-native-geolocation-service';
+import getDefs from './defs';
+import createGeoJsonFeatureCollection from './createGeoJsonFeatureCollection';
+import EmergencyBtn from './modules/buttons/EmergencyBtn';
+import MoveTypes from './modules/buttons/MoveTypes';
+import SplashScreen from 'react-native-splash-screen';
+import SetAsDestinationBtn from './modules/buttons/SetAsDestinationBtn';
 
 MapboxGL.setAccessToken(
   'pk.eyJ1Ijoib3Nrb3ZiYXNpdWsiLCJhIjoiY2s1NWVwcnhhMDhrazNmcGNvZjJ1MnA4OSJ9.56GsGp2cl6zpYh-Ns8ThxA'
@@ -22,117 +25,73 @@ const App = () => {
     zoom: 13
   });
 
-  const [userLocation, setUserLocation] = useState(false);
+  const [defsFeaturesData, setDefsFeaturesData] = useState(getDefs());
+  const [userLocation, setUserLocation] = useState(null);
   const [popupData, setPopupData] = useState(false);
-  const [directionData, setDirectionData] = useState(null);
-  const [directionValue] = useState(new Animated.ValueXY({x: -100, y: 0}));
-
+  const [directionData, setDirectionData] = useState({geoData: null});
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
 
-  const [originDestCollection, setODCollection] = useState({
-    type: 'FeatureCollection',
-    features: []
-  });
-
   useEffect(() => {
-    slideDirectionWindow();
-  }, [destination]);
+    //  geo permissions
+    (async () => {
+      await requestGeoLocationPermission();
+      await Geolocation.getCurrentPosition(
+        position => {
+          const location = [
+            position.coords.longitude,
+            position.coords.latitude
+          ];
+          setUserLocation(location);
+          setMapParameters({
+            coordinates: location,
+            zoom: 13
+          });
+        },
+        error => {
+          alert(error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          showLocationDialog: true,
+          timeout: Number.MAX_SAFE_INTEGER,
+          maximumAge: 5000,
+          distanceFilter: 5
+        }
+      );
+    })();
 
-  const buildDir = async (start, end, type) => {
-    let tripType;
-    switch (type) {
-      case 0: {
-        tripType = 'walking';
-        break;
-      }
-      case 1: {
-        tripType = 'cycling';
-        break;
-      }
-      case 2: {
-        tripType = 'driving';
-        break;
-      }
-      case 3: {
-        tripType = 'driving-traffic';
-        break;
-      }
-    }
-
-    const res = await fetch(createDirReq(start, end, tripType));
-    const data = await res.json();
-
-    const geoData = polyline.toGeoJSON(data.routes[0].geometry);
-    // console.log(geoData);
-    geoData.coordinates.unshift(start);
-    geoData.coordinates.push(end);
-    // return geoData;
-    setDirectionData(geoData);
-  };
-
-  const slideDirectionWindow = () => {
-    if (destination) {
-      Animated.spring(directionValue, {
-        toValue: {x: 0, y: 0},
-        speed: 20
-      }).start();
-    } else {
-      Animated.spring(directionValue, {
-        toValue: {x: -100, y: 0},
-        speed: 20
-      }).start();
-    }
-  };
+    SplashScreen.hide();
+  }, []);
 
   const userLocationUpdate = event => {
-    if (!userLocation) {
-      const {coords} = event;
-      setMapParameters({
-        coordinates: [coords.longitude, coords.latitude],
-        zoom: 16
-      });
-      setUserLocation([coords.longitude, coords.latitude]);
-    }
+    const {coords} = event;
+    setUserLocation([coords.longitude, coords.latitude]);
   };
 
-  const longMapPress = async event => {
+  const longMapPress = event => {
     const {coordinates} = event.geometry;
     console.log(coordinates);
-    if (!origin) {
-      setOrigin(coordinates);
-    } else if (!destination) {
+
+    if (!destination) {
+      setOrigin(userLocation);
       setDestination(coordinates);
-    } else {
-      setDirectionData(null);
+    } else if (directionData || destination) {
+      setDirectionData({geoData: null});
       setOrigin(null);
       setDestination(null);
-      setODCollection({features: []});
-      return;
     }
-
-    setODCollection({
-      type: 'FeatureCollection',
-      features: [
-        ...originDestCollection.features,
-        {
-          type: 'Feature',
-          id: Math.random().toString(),
-          geometry: {
-            type: 'Point',
-            coordinates
-          }
-        }
-      ]
-    });
   };
 
-  const displayWay = type => {
-    buildDir(origin, destination, type);
-  };
-
-  const shortMapPress = event => {
+  const shortMapPress = () => {
     setPopupData(null);
+  };
+
+  const locationPress = () => {
+    setMapParameters({
+      coordinates: userLocation,
+      zoom: 16
+    });
   };
 
   return (
@@ -152,49 +111,54 @@ const App = () => {
           <DefPinLayer
             setMapParameters={setMapParameters}
             setPopupData={setPopupData}
+            defibrillatorInfo={createGeoJsonFeatureCollection(defsFeaturesData)}
           />
 
           <DirectionLinesLayer directionData={directionData} />
-          <OriginDestPinsLayer originDestCollection={originDestCollection} />
 
-          {/* <MapboxGL.UserLocation
-            onPress={shortMapPress}
-            visible={true}
-            onUpdate={userLocationUpdate}
-          /> */}
+          <DestinatonPinLayer destinationCoords={destination} />
+
+          {userLocation && (
+            <MapboxGL.UserLocation
+              onPress={locationPress}
+              visible={true}
+              onUpdate={userLocationUpdate}
+            />
+          )}
         </MapboxGL.MapView>
       </View>
-      <Popup popupData={popupData} />
 
-      <Animated.View style={[styles.driveTypes, directionValue.getLayout()]}>
-        <TouchableOpacity
-          onPress={() => {
-            displayWay(0);
-          }}
-        >
-          <View style={styles.driveTypeButton}>
-            <Text style={styles.driveTypeText}>Walk</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            displayWay(1);
-          }}
-        >
-          <View style={styles.driveTypeButton}>
-            <Text style={styles.driveTypeText}>Cycle</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            displayWay(2);
-          }}
-        >
-          <View style={styles.driveTypeButton}>
-            <Text style={styles.driveTypeText}>Drive</Text>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
+      {!destination && userLocation && (
+        <EmergencyBtn
+          userLocation={userLocation}
+          defsFeaturesData={defsFeaturesData}
+          setPopupData={setPopupData}
+          setOrigin={setOrigin}
+          setDestination={setDestination}
+          setMapParameters={setMapParameters}
+        />
+      )}
+
+      <Popup popupData={popupData} setPopupData={setPopupData} />
+
+      {destination && (
+        <MoveTypes
+          setDirectionData={setDirectionData}
+          origin={origin}
+          destination={destination}
+        />
+      )}
+
+      {!destination && popupData && (
+        <SetAsDestinationBtn
+          popupData={popupData}
+          setDirectionData={setDirectionData}
+          userLocation={userLocation}
+          setOrigin={setOrigin}
+          setDestination={setDestination}
+          setMapParameters={setMapParameters}
+        />
+      )}
     </View>
   );
 };
@@ -218,22 +182,16 @@ const styles = StyleSheet.create({
   map: {
     flex: 1
   },
-  driveTypes: {
-    padding: 15,
-    backgroundColor: '#282c34',
+  destBtn: {
+    color: '#fcfcfc',
+    lineHeight: 25,
+    fontSize: 16
+  },
+  destHolder: {
     position: 'absolute',
-    width: 100,
-    left: 0
-  },
-  driveTypeButton: {
+    top: 30,
+    right: 0,
     padding: 10,
-    backgroundColor: '#cfcfcf',
-    textAlign: 'center',
-    marginBottom: 10
-  },
-  driveTypeText: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '700'
+    backgroundColor: '#282c34'
   }
 });

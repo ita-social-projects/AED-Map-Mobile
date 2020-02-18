@@ -3,7 +3,8 @@ const DIR_LAYOUT = {
   lineJoin: 'round',
   lineWidth: 2,
   lineColor: '#00f',
-  visibility: 'visible'
+  visibility: 'visible',
+  lineDasharray: [1, 2]
 };
 
 export default DIR_LAYOUT;
