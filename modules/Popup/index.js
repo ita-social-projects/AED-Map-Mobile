@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Animated, PanResponder} from 'react-native';
+import {connect} from 'react-redux';
 import DefInfoContent from './PopupContents/DefInfoContent';
 import {maxPopupYOffset, gotoPopupYOffset, maxYVelocity} from './consts';
+import {setPopupData} from '../../store/actions';
 
 const Popup = ({popupData, setPopupData}) => {
   const [popupValue] = useState(new Animated.Value(0));
@@ -65,12 +67,19 @@ const Popup = ({popupData, setPopupData}) => {
       <Animated.View style={styles.popupHandle} {...panResponder.panHandlers}>
         <View style={styles.handleStick} />
       </Animated.View>
-      {popupData && <DefInfoContent id={popupData.id} />}
+      {popupData && <DefInfoContent />}
     </Animated.View>
   );
 };
 
-export default Popup;
+export default connect(
+  state => ({
+    popupData: state.popupData
+  }),
+  dispatch => ({
+    setPopupData: data => dispatch(setPopupData(data))
+  })
+)(Popup);
 
 const styles = StyleSheet.create({
   popupOuter: {

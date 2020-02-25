@@ -1,30 +1,84 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import getDefs from '../../../defs';
+import React, {useState, useEffect} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Button,
+  TouchableOpacity,
+  Platform,
+  Linking
+} from 'react-native';
+import {connect} from 'react-redux';
 import LoadingSpinner from '../../../shared/LoadingSpinner';
+import {fetchSingleItem} from '../../../store/api';
+import {setPopupData, setMapParameters} from '../../../store/actions';
+import {nearestDefsSelector} from '../../../store/reducer';
 
-const DefInfoContent = ({id}) => {
-  const [currentDef, setCurrentDef] = useState(null);
-
+const DefInfoContent = ({
+  popupData,
+  setPopupData,
+  nearestDefs,
+  setMapParameters
+}) => {
+  const [currentDef, setCurrentDef] = useState({});
   useEffect(() => {
-    setCurrentDef(null);
-    const defs = getDefs();
-    setTimeout(() => {
-      const result = defs.filter(def => {
-        return def.id === id;
-      });
+    const getPopupData = async () => {
+      const {
+        data: {defibrillator}
+      } = await fetchSingleItem({id: popupData.id});
+      setCurrentDef(defibrillator);
+    };
+    getPopupData();
+  }, [popupData.id]);
 
-      console.log(result[0].additional_information);
-
-      setCurrentDef(result[0]);
-    }, 1000);
-  }, [id]);
-
+  const [counter, setCounter] = useState(1);
+  const makePhoneCall = phoneNumber => {
+    let phoneNum = '';
+    if (Platform.OS === 'android') {
+      phoneNum = `tel:${phoneNumber}`;
+    } else {
+      phoneNum = `telprompt:${phoneNumber}`;
+    }
+    Linking.openURL(phoneNum);
+    setPopupData(null);
+  };
+  const findNext = () => {
+    setCounter(count => count + 1);
+    if (counter >= nearestDefs.length - 1) {
+      setCounter(0);
+    }
+    const near = nearestDefs[counter];
+    setPopupData({id: near.id});
+    setMapParameters({
+      coordinates: near.coordinates,
+      zoom: 15
+    });
+  };
+  const phoneRenders =
+    currentDef.phone &&
+    currentDef.phone.map(singlePhone => {
+      return (
+        <TouchableOpacity key={singlePhone} style={styles.phone}>
+          <Button
+            color="gray"
+            key={singlePhone}
+            title={singlePhone}
+            onPress={() => makePhoneCall(singlePhone)}
+          />
+        </TouchableOpacity>
+      );
+    });
   return (
     <View style={styles.contentHolder}>
       {currentDef ? (
-        <View style={styles.currentInfo}>
-          <Text style={styles.popupText}>{currentDef.title}</Text>
+        <ScrollView style={styles.currentInfo}>
+          <TouchableOpacity style={styles.nextBtn} onPress={findNext}>
+            <Text>Знайти наступний дефібрилятор</Text>
+          </TouchableOpacity>
+          <View style={styles.title}>
+            <Text style={styles.popupText}>{currentDef.title}</Text>
+          </View>
           <Text style={styles.popupText}>{currentDef.address}</Text>
           {currentDef.additional_information ? (
             <Text style={styles.popupText}>
@@ -32,14 +86,12 @@ const DefInfoContent = ({id}) => {
             </Text>
           ) : null}
           {currentDef.phone ? (
-            <Text style={styles.popupText}>
-              {'Телефони: \n'}
-              {currentDef.phone.map(singlePhone => {
-                return singlePhone + '\n';
-              })}
-            </Text>
+            <>
+              <Text style={styles.popupText}>Телефони:</Text>
+              {phoneRenders}
+            </>
           ) : null}
-        </View>
+        </ScrollView>
       ) : (
         <LoadingSpinner />
       )}
@@ -47,7 +99,16 @@ const DefInfoContent = ({id}) => {
   );
 };
 
-export default DefInfoContent;
+export default connect(
+  state => ({
+    popupData: state.popupData,
+    nearestDefs: nearestDefsSelector(state)
+  }),
+  dispatch => ({
+    setPopupData: data => dispatch(setPopupData(data)),
+    setMapParameters: map => dispatch(setMapParameters(map))
+  })
+)(DefInfoContent);
 
 const styles = StyleSheet.create({
   popupText: {
@@ -59,13 +120,23 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     marginBottom: 5
   },
+  nextBtn: {
+    alignItems: 'center',
+    backgroundColor: '#ffddcc',
+    padding: 5,
+    marginVertical: 5
+  },
+  phone: {
+    marginVertical: 10
+  },
   contentHolder: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 10
+    paddingBottom: 15
   },
   currentInfo: {
     width: '100%',
+    maxHeight: 400,
     paddingHorizontal: 15
   }
 });
