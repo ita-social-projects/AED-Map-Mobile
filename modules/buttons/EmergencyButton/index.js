@@ -1,15 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Animated} from 'react-native';
-// import getCenterOfWay from '../../../getCenterOfWay';
-
+import {connect} from 'react-redux';
+import {
+  loadPopupData,
+  setDestination,
+  setOrigin,
+  setMapParameters
+} from '../../../store/actions';
 const emergencySize = 125;
 
 const EmergencyButton = ({
   userLocation,
   defsFeaturesData,
-  setPopupData,
   setOrigin,
   setDestination,
+  loadPopupData,
   setMapParameters
 }) => {
   const [emergencyBleepWidth] = useState(new Animated.Value(emergencySize));
@@ -26,7 +31,7 @@ const EmergencyButton = ({
       const pathLength = Math.sqrt(xLength * xLength + yLength * yLength);
 
       return {
-        id: singleDef.id,
+        id: singleDef._id,
         coordinates: singleDef.location.coordinates,
         pathLength
       };
@@ -36,10 +41,8 @@ const EmergencyButton = ({
       return a.pathLength > b.pathLength;
     });
 
-    setPopupData({
-      id: pointsAndPaths[0].id,
-      coordinates: pointsAndPaths[0].coordinates,
-      data: {}
+    loadPopupData({
+      id: pointsAndPaths[0].id
     });
 
     setOrigin(userLocation);
@@ -111,7 +114,19 @@ const EmergencyButton = ({
     </View>
   );
 };
-export default EmergencyButton;
+export default connect(
+  state => ({
+    userLocation: state.userLocation,
+    defsFeaturesData: state.featureCollection,
+    mapParameters: state.mapParameters
+  }),
+  dispatch => ({
+    loadPopupData: params => dispatch(loadPopupData(params)),
+    setDestination: destination => dispatch(setDestination(destination)),
+    setOrigin: origin => dispatch(setOrigin(origin)),
+    setMapParameters: map => dispatch(setMapParameters(map))
+  })
+)(EmergencyButton);
 
 const styles = StyleSheet.create({
   emergencyButtonHolder: {

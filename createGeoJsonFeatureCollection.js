@@ -2,7 +2,7 @@ const features = points => {
   return points.map(point => {
     return {
       type: 'Feature',
-      id: point.id,
+      id: point._id,
       geometry: {
         type: point.location.type,
         coordinates: point.location.coordinates

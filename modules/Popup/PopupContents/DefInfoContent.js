@@ -1,25 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import getDefs from '../../../defs';
+import {connect} from 'react-redux';
 import LoadingSpinner from '../../../shared/LoadingSpinner';
 
-const DefInfoContent = ({id}) => {
-  const [currentDef, setCurrentDef] = useState(null);
-
-  useEffect(() => {
-    setCurrentDef(null);
-    const defs = getDefs();
-    setTimeout(() => {
-      const result = defs.filter(def => {
-        return def.id === id;
-      });
-
-      console.log(result[0].additional_information);
-
-      setCurrentDef(result[0]);
-    }, 1000);
-  }, [id]);
-
+const DefInfoContent = ({currentDef}) => {
   return (
     <View style={styles.contentHolder}>
       {currentDef ? (
@@ -47,7 +31,9 @@ const DefInfoContent = ({id}) => {
   );
 };
 
-export default DefInfoContent;
+export default connect(state => ({
+  currentDef: state.popupData
+}))(DefInfoContent);
 
 const styles = StyleSheet.create({
   popupText: {

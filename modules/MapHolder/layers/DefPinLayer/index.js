@@ -1,29 +1,30 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
+import {connect} from 'react-redux';
 import SYMBOL_LAYOUT from '../layouts/SYMBOL_LAYOUT';
+import createGeoJsonFeatureCollection from '../../../../createGeoJsonFeatureCollection';
+import {fetchDefs, loadPopupData} from '../../../../store/actions';
 import {defaultShapeCollection} from '../consts';
 
-const DefPinLayer = ({defibrillatorInfo, setPopupData, setMapParameters}) => {
+const DefPinLayer = ({setMapParameters, fetchingDefs, defs, loadPopupData}) => {
+  useEffect(() => {
+    fetchingDefs();
+  }, []);
+  const defsFeaturesData =
+    createGeoJsonFeatureCollection(defs) || defaultShapeCollection;
   const defPinPress = ({nativeEvent}) => {
     const feature = nativeEvent.payload;
-    const {coordinates} = feature.geometry;
-
     setMapParameters({
-      coordinates,
+      coordinates: feature.geometry.coordinates,
       zoom: 15
     });
-
-    setPopupData({
-      id: feature.id,
-      coordinates,
-      data: {}
-    });
+    loadPopupData({id: feature.id});
   };
 
   return (
     <MapboxGL.ShapeSource
       id="defPins"
-      shape={defibrillatorInfo || defaultShapeCollection}
+      shape={defsFeaturesData}
       onPress={defPinPress}
     >
       <MapboxGL.SymbolLayer
@@ -34,4 +35,12 @@ const DefPinLayer = ({defibrillatorInfo, setPopupData, setMapParameters}) => {
     </MapboxGL.ShapeSource>
   );
 };
-export default DefPinLayer;
+export default connect(
+  state => ({
+    defs: state.featureCollection
+  }),
+  dispatch => ({
+    fetchingDefs: () => dispatch(fetchDefs()),
+    loadPopupData: params => dispatch(loadPopupData(params))
+  })
+)(DefPinLayer);

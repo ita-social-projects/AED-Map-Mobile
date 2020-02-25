@@ -1,13 +1,18 @@
 import React from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Animated} from 'react-native';
+import {connect} from 'react-redux';
+import {
+  setDirectionData,
+  setOrigin,
+  setDestination
+} from '../../../store/actions';
 
 const SetAsDestinationBtn = ({
   popupData,
   setDirectionData,
   userLocation,
   setOrigin,
-  setDestination,
-  setMapParameters
+  setDestination
 }) => {
   const setAsDestination = () => {
     const {coordinates} = popupData;
@@ -25,7 +30,14 @@ const SetAsDestinationBtn = ({
   );
 };
 
-export default SetAsDestinationBtn;
+export default connect(
+  state => ({userLocation: state.userLocation, popupData: state.popupData}),
+  dispatch => ({
+    setDirectionData: data => dispatch(setDirectionData(data)),
+    setOrigin: origin => dispatch(setOrigin(origin)),
+    setDestination: destination => dispatch(setDestination(destination))
+  })
+)(SetAsDestinationBtn);
 
 const styles = StyleSheet.create({
   destBtn: {

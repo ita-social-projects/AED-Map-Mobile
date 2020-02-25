@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-
+import {connect} from 'react-redux';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   Image
 } from 'react-native';
 import getDirectionData from '../../../getDirectionData';
+import {setDirectionData} from 'react-redux';
 
 const additionalStyle = {
   driving: {
@@ -39,6 +40,7 @@ const MoveTypes = ({setDirectionData, origin, destination}) => {
   }, [destination]);
 
   const displayWayBasedOnType = async () => {
+    console.log(1);
     if (destination) {
       const geoData = await getDirectionData(
         origin,
@@ -109,7 +111,12 @@ const MoveTypes = ({setDirectionData, origin, destination}) => {
   );
 };
 
-export default MoveTypes;
+export default connect(
+  state => ({origin: state.origin, destination: state.destination}),
+  dispatch => ({
+    setDirectionData: data => dispatch(setDirectionData(data))
+  })
+)(MoveTypes);
 
 const styles = StyleSheet.create({
   driveTypes: {
