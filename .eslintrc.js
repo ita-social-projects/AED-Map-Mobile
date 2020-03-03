@@ -3,6 +3,6 @@ module.exports = {
   extends: '@react-native-community',
   rules: {
     'comma-dangle': 'off',
-    'react-hooks/exhaustive-deps': 'warn'
+    'react-hooks/exhaustive-deps': 'off'
   }
 };
