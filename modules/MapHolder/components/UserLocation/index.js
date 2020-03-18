@@ -1,5 +1,7 @@
 import React from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
+import {connect} from 'react-redux';
+import {setUserLocation} from '../../../../store/actions';
 
 const UserLocation = ({setMapParameters, userLocation, setUserLocation}) => {
   const locationPress = () => {
@@ -23,4 +25,9 @@ const UserLocation = ({setMapParameters, userLocation, setUserLocation}) => {
     )
   );
 };
-export default UserLocation;
+export default connect(
+  state => ({userLocation: state.userLocation}),
+  dispatch => ({
+    setUserLocation: location => dispatch(setUserLocation(location))
+  })
+)(UserLocation);

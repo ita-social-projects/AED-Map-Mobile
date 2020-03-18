@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-
+import {connect} from 'react-redux';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   Image
 } from 'react-native';
 import getDirectionData from '../../../getDirectionData';
+import {setDirectionData} from '../../../store/actions';
 
 const additionalStyle = {
   driving: {
@@ -24,10 +25,9 @@ const additionalStyle = {
   }
 };
 
-const MoveTypes = ({setDirectionData, origin, destination}) => {
+const MoveTypes = ({origin, destination, setDirectionData}) => {
   const [directionValue] = useState(new Animated.ValueXY({x: -160, y: 0}));
   const [directionType, setDirectionType] = useState(null);
-
   useEffect(() => {
     if (directionType) {
       displayWayBasedOnType();
@@ -109,7 +109,12 @@ const MoveTypes = ({setDirectionData, origin, destination}) => {
   );
 };
 
-export default MoveTypes;
+export default connect(
+  state => ({origin: state.origin, destination: state.destination}),
+  dispatch => ({
+    setDirectionData: data => dispatch(setDirectionData(data))
+  })
+)(MoveTypes);
 
 const styles = StyleSheet.create({
   driveTypes: {

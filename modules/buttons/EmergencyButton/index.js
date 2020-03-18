@@ -1,14 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Animated} from 'react-native';
-// import getCenterOfWay from '../../../getCenterOfWay';
-
+import {connect} from 'react-redux';
+import {
+  setDestination,
+  setOrigin,
+  setMapParameters,
+  setPopupData
+} from '../../../store/actions';
+import {nearestDefsSelector} from '../../../store/reducer';
 const emergencySize = 125;
 
 const EmergencyButton = ({
   userLocation,
-  defsFeaturesData,
-  setPopupData,
+  nearestDefs,
   setOrigin,
+  setPopupData,
   setDestination,
   setMapParameters
 }) => {
@@ -16,36 +22,14 @@ const EmergencyButton = ({
   const [emergencyOpacity] = useState(new Animated.Value(1));
 
   const emergencyPress = () => {
-    const pointsAndPaths = defsFeaturesData.map(singleDef => {
-      const xLength = Math.abs(
-        userLocation[0] - singleDef.location.coordinates[0]
-      );
-      const yLength = Math.abs(
-        userLocation[1] - singleDef.location.coordinates[1]
-      );
-      const pathLength = Math.sqrt(xLength * xLength + yLength * yLength);
-
-      return {
-        id: singleDef.id,
-        coordinates: singleDef.location.coordinates,
-        pathLength
-      };
-    });
-
-    pointsAndPaths.sort((a, b) => {
-      return a.pathLength > b.pathLength;
-    });
-
     setPopupData({
-      id: pointsAndPaths[0].id,
-      coordinates: pointsAndPaths[0].coordinates,
-      data: {}
+      type: 'default',
+      id: nearestDefs[0].id
     });
 
     setOrigin(userLocation);
-
-    setDestination(pointsAndPaths[0].coordinates);
-    const {coordinates} = pointsAndPaths[0];
+    const {coordinates} = nearestDefs[0];
+    setDestination(coordinates);
 
     setMapParameters({
       coordinates,
@@ -111,7 +95,19 @@ const EmergencyButton = ({
     </View>
   );
 };
-export default EmergencyButton;
+export default connect(
+  state => ({
+    userLocation: state.userLocation,
+    nearestDefs: nearestDefsSelector(state),
+    mapParameters: state.mapParameters
+  }),
+  dispatch => ({
+    setPopupData: data => dispatch(setPopupData(data)),
+    setDestination: destination => dispatch(setDestination(destination)),
+    setOrigin: origin => dispatch(setOrigin(origin)),
+    setMapParameters: map => dispatch(setMapParameters(map))
+  })
+)(EmergencyButton);
 
 const styles = StyleSheet.create({
   emergencyButtonHolder: {
