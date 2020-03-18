@@ -14,8 +14,6 @@ const DefInfoContent = ({id}) => {
         return def.id === id;
       });
 
-      console.log(result[0].additional_information);
-
       setCurrentDef(result[0]);
     }, 1000);
   }, [id]);

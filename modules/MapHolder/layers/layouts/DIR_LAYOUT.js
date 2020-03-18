@@ -1,7 +1,7 @@
 const DIR_LAYOUT = {
   lineCap: 'square',
   lineJoin: 'round',
-  lineWidth: 2,
+  lineWidth: 3,
   lineColor: '#00f',
   visibility: 'visible',
   lineDasharray: [1, 2]

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import Camera from './components/Camera';
@@ -7,7 +7,6 @@ import DirectionLinesLayer from './layers/DirectionLinesLayer';
 import DestinatonPinLayer from './layers/DestinatonPinLayer';
 import createGeoJsonFeatureCollection from '../../createGeoJsonFeatureCollection';
 import UserLocation from './components/UserLocation';
-import getGPSlocationPermission from '../../getGPSlocationPermission';
 
 MapboxGL.setAccessToken(
   'pk.eyJ1Ijoib3Nrb3ZiYXNpdWsiLCJhIjoiY2s1NWVwcnhhMDhrazNmcGNvZjJ1MnA4OSJ9.56GsGp2cl6zpYh-Ns8ThxA'
@@ -27,11 +26,6 @@ const MapHolder = ({
   setMapParameters,
   defsFeaturesData
 }) => {
-  useEffect(() => {
-    getGPSlocationPermission(location => {
-      setUserLocation(location);
-    });
-  }, []);
   const longMapPress = event => {
     const {coordinates} = event.geometry;
     if (!destination) {
@@ -43,6 +37,7 @@ const MapHolder = ({
       setDestination(null);
     }
   };
+
   const shortMapPress = () => {
     setPopupData(null);
   };
@@ -59,13 +54,15 @@ const MapHolder = ({
         }}
       >
         {mapParameters && <Camera mapParameters={mapParameters} />}
-        <DirectionLinesLayer directionData={directionData} />
-        <DestinatonPinLayer destinationCoords={destination} />
         <DefPinLayer
           setMapParameters={setMapParameters}
           setPopupData={setPopupData}
           defibrillatorInfo={createGeoJsonFeatureCollection(defsFeaturesData)}
         />
+        <DirectionLinesLayer directionData={directionData} />
+
+        <DestinatonPinLayer destinationCoords={destination} />
+
         <UserLocation
           setMapParameters={setMapParameters}
           userLocation={userLocation}

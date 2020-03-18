@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import Popup from '../Popup';
 import getDefs from '../../defs';
@@ -6,6 +6,7 @@ import EmergencyButton from '../buttons/EmergencyButton';
 import MoveTypes from '../buttons/MoveTypes';
 import SetAsDestinationBtn from '../buttons/SetAsDestinationBtn';
 import MapHolder from '../MapHolder';
+import getGPSlocationPermission from '../../getGPSlocationPermission';
 
 MapboxGL.setAccessToken(
   'pk.eyJ1Ijoib3Nrb3ZiYXNpdWsiLCJhIjoiY2s1NWVwcnhhMDhrazNmcGNvZjJ1MnA4OSJ9.56GsGp2cl6zpYh-Ns8ThxA'
@@ -23,6 +24,17 @@ const MainHolder = () => {
   const [directionData, setDirectionData] = useState({geoData: null});
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
+
+  useEffect(() => {
+    getGPSlocationPermission(location => {
+      setUserLocation(location);
+      setMapParameters({
+        coordinates: location,
+        zoom: 13
+      });
+    });
+  }, []);
+
   return (
     <>
       <MapHolder
@@ -58,6 +70,7 @@ const MainHolder = () => {
           setDirectionData={setDirectionData}
           origin={origin}
           destination={destination}
+          setDestination={setDestination}
         />
       )}
 
