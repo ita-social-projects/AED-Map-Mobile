@@ -12,23 +12,24 @@ const emergencySize = 125;
 
 const EmergencyButton = ({
   userLocation,
-  nearestDefs,
   setOrigin,
   setPopupData,
   setDestination,
-  setMapParameters
+  setMapParameters,
+  featureCollection
 }) => {
   const [emergencyBleepWidth] = useState(new Animated.Value(emergencySize));
   const [emergencyOpacity] = useState(new Animated.Value(1));
 
   const emergencyPress = () => {
+    const nearbyDefs = nearestDefsSelector({featureCollection, userLocation});
     setPopupData({
       type: 'default',
-      id: nearestDefs[0].id
+      id: nearbyDefs[0].id
     });
 
     setOrigin(userLocation);
-    const {coordinates} = nearestDefs[0];
+    const {coordinates} = nearbyDefs[0];
     setDestination(coordinates);
 
     setMapParameters({
@@ -98,7 +99,7 @@ const EmergencyButton = ({
 export default connect(
   state => ({
     userLocation: state.userLocation,
-    nearestDefs: nearestDefsSelector(state),
+    featureCollection: state.featureCollection,
     mapParameters: state.mapParameters
   }),
   dispatch => ({

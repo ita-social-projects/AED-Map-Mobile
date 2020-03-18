@@ -10,6 +10,7 @@ const DefPinLayer = ({setMapParameters, fetchingDefs, defs, setPopupData}) => {
   useEffect(() => {
     fetchingDefs();
   }, []);
+
   const defsFeaturesData =
     createGeoJsonFeatureCollection(defs) || defaultShapeCollection;
   const defPinPress = ({nativeEvent}) => {

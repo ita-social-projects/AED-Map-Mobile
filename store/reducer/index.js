@@ -9,6 +9,7 @@ import {
   SUCCESS_LOAD_DATA,
   FAIL_LOAD_DATA
 } from '../consts';
+
 const initialState = {
   directionData: {geoData: null},
   origin: null,
@@ -19,11 +20,11 @@ const initialState = {
     coordinates: [24.031610977781128, 49.84180396191118],
     zoom: 13
   },
-
   loading: false,
   error: null,
   featureCollection: []
 };
+
 const rootReducer = (state = initialState, {type, payload}) => {
   switch (type) {
     case START_LOAD_DATA: {
@@ -66,6 +67,7 @@ export const currentDefSelector = ({featureCollection, popupData}) => {
 };
 
 export const nearestDefsSelector = ({featureCollection, userLocation}) => {
+  console.log('mapping defs');
   return featureCollection
     .map(singleDef => {
       const xLength = Math.abs(
