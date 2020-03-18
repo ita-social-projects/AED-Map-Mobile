@@ -14,7 +14,6 @@ const UserLocation = ({setMapParameters, userLocation, setUserLocation}) => {
     const {coords} = event;
     setUserLocation([coords.longitude, coords.latitude]);
   };
-
   return (
     userLocation && (
       <MapboxGL.UserLocation

@@ -8,24 +8,9 @@ import {
   Image
 } from 'react-native';
 import getDirectionData from '../../../getDirectionData';
-import {setDirectionData} from '../../../store/actions';
+import {additionalStyle} from './consts';
 
-const additionalStyle = {
-  driving: {
-    lineColor: '#00f',
-    lineDasharray: [3, 0]
-  },
-  cycling: {
-    lineColor: '#00f',
-    lineDasharray: [2, 2]
-  },
-  walking: {
-    lineColor: '#00f',
-    lineDasharray: [1, 3]
-  }
-};
-
-const MoveTypes = ({origin, destination, setDirectionData}) => {
+const MoveTypes = ({setDirectionData, origin, destination, setDestination}) => {
   const [directionValue] = useState(new Animated.ValueXY({x: -160, y: 0}));
   const [directionType, setDirectionType] = useState(null);
   useEffect(() => {
@@ -52,6 +37,7 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
       });
     }
   };
+
   const slideDirectionWindow = () => {
     if (destination) {
       Animated.spring(directionValue, {
@@ -65,6 +51,7 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
       }).start();
     }
   };
+
   return (
     <Animated.View style={[styles.driveTypes, directionValue.getLayout()]}>
       <TouchableOpacity
@@ -105,6 +92,21 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
           />
         </View>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setDestination(null);
+          setDirectionData({
+            geoData: null
+          });
+        }}
+      >
+        <View style={styles.closeTypeButton}>
+          <Image
+            style={styles.driveImg}
+            source={require('../../../content/images/close_cross.png')}
+          />
+        </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -121,15 +123,21 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#282c34',
     position: 'absolute',
-    left: -160,
+    left: -200,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: 160
+    width: 200
   },
   driveTypeButton: {
     width: 40,
     height: 40,
     padding: 3,
+    textAlign: 'center'
+  },
+  closeTypeButton: {
+    width: 40,
+    height: 40,
+    padding: 5,
     textAlign: 'center'
   },
   driveImg: {

@@ -6,6 +6,7 @@ import EmergencyButton from '../buttons/EmergencyButton';
 import MoveTypes from '../buttons/MoveTypes';
 import SetAsDestinationBtn from '../buttons/SetAsDestinationBtn';
 import MapHolder from '../MapHolder';
+import getGPSlocationPermission from '../../getGPSlocationPermission';
 
 MapboxGL.setAccessToken(
   'pk.eyJ1Ijoib3Nrb3ZiYXNpdWsiLCJhIjoiY2s1NWVwcnhhMDhrazNmcGNvZjJ1MnA4OSJ9.56GsGp2cl6zpYh-Ns8ThxA'

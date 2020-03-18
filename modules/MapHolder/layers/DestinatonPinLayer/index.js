@@ -6,12 +6,13 @@ import {createSingleFeature} from '../consts';
 const DestinatonPinLayer = ({destinationCoords}) => {
   const mainFeature = createSingleFeature(destinationCoords);
 
-  return mainFeature.geometry.coordinates ? (
+  return destinationCoords ? (
     <MapboxGL.ShapeSource id="dest" shape={mainFeature}>
       <MapboxGL.SymbolLayer
         id="destSymbolLayer"
         style={DESTINATION_LAYOUT}
-        aboveLayerID="defPinsSymbolsLayer"
+        aboveLayerID="dirLinesLayer"
+        belowLayerID="defPinsSymbolsLayer"
       />
     </MapboxGL.ShapeSource>
   ) : null;

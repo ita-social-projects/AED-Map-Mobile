@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {connect} from 'react-redux';
 import MapboxGL from '@react-native-mapbox-gl/maps';
@@ -7,7 +7,6 @@ import DefPinLayer from './layers/DefPinLayer';
 import DirectionLinesLayer from './layers/DirectionLinesLayer';
 import DestinatonPinLayer from './layers/DestinatonPinLayer';
 import UserLocation from './components/UserLocation';
-import getGPSlocationPermission from '../../getGPSlocationPermission';
 import {
   setPopupData,
   setOrigin,
@@ -34,11 +33,6 @@ const MapHolder = ({
   mapParameters,
   setMapParameters
 }) => {
-  useEffect(() => {
-    getGPSlocationPermission(location => {
-      setUserLocation(location);
-    });
-  }, []);
   const longMapPress = event => {
     const {coordinates} = event.geometry;
     if (!destination) {
@@ -50,6 +44,7 @@ const MapHolder = ({
       setDestination(null);
     }
   };
+
   const shortMapPress = () => {
     setPopupData(null);
   };
