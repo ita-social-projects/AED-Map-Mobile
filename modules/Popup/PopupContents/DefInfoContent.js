@@ -14,25 +14,34 @@ import LoadingSpinner from '../../../shared/LoadingSpinner';
 import {fetchSingleItem} from '../../../store/api';
 import {setPopupData, setMapParameters} from '../../../store/actions';
 import {nearestDefsSelector} from '../../../store/reducer';
+import getFromMocks from '../../../store/api/getFromMocks';
 
 const DefInfoContent = ({
   popupData,
   setPopupData,
-  nearestDefs,
-  setMapParameters
+  setMapParameters,
+  featureCollection,
+  userLocation
 }) => {
   const [currentDef, setCurrentDef] = useState({});
   useEffect(() => {
     const getPopupData = async () => {
-      const {
-        data: {defibrillator}
-      } = await fetchSingleItem({id: popupData.id});
+      let defibrillator = {};
+      if (getFromMocks) {
+        defibrillator = require('../../../mocks/FullDefs.json').data.listDefs.find(
+          element => element._id === popupData.id
+        );
+      } else {
+        defibrillator = await fetchSingleItem({id: popupData.id}).defibrillator;
+      }
+
       setCurrentDef(defibrillator);
     };
     getPopupData();
   }, [popupData.id]);
 
   const [counter, setCounter] = useState(1);
+
   const makePhoneCall = phoneNumber => {
     let phoneNum = '';
     if (Platform.OS === 'android') {
@@ -43,18 +52,21 @@ const DefInfoContent = ({
     Linking.openURL(phoneNum);
     setPopupData(null);
   };
+
   const findNext = () => {
+    const nearbyDefs = nearestDefsSelector({featureCollection, userLocation});
     setCounter(count => count + 1);
-    if (counter >= nearestDefs.length - 1) {
+    if (counter >= nearbyDefs.length - 1) {
       setCounter(0);
     }
-    const near = nearestDefs[counter];
+    const near = nearbyDefs[counter];
     setPopupData({id: near.id});
     setMapParameters({
       coordinates: near.coordinates,
       zoom: 15
     });
   };
+
   const phoneRenders =
     currentDef.phone &&
     currentDef.phone.map(singlePhone => {
@@ -69,6 +81,7 @@ const DefInfoContent = ({
         </TouchableOpacity>
       );
     });
+
   return (
     <View style={styles.contentHolder}>
       {currentDef ? (
@@ -76,6 +89,7 @@ const DefInfoContent = ({
           <TouchableOpacity style={styles.nextBtn} onPress={findNext}>
             <Text>Знайти наступний дефібрилятор</Text>
           </TouchableOpacity>
+
           <View style={styles.title}>
             <Text style={styles.popupText}>{currentDef.title}</Text>
           </View>
@@ -102,7 +116,8 @@ const DefInfoContent = ({
 export default connect(
   state => ({
     popupData: state.popupData,
-    nearestDefs: nearestDefsSelector(state)
+    featureCollection: state.featureCollection,
+    userLocation: state.userLocation
   }),
   dispatch => ({
     setPopupData: data => dispatch(setPopupData(data)),

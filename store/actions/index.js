@@ -1,4 +1,4 @@
-import {fetchDefItems, fetchSingleItem} from '../api';
+import {fetchDefItems} from '../api';
 import {
   SET_DIRECTION_DATA,
   SET_ORIGIN,
