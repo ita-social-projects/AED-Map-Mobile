@@ -1,9 +1,9 @@
-import mapPin from '../../../../content/images/pinIcon.png';
+import mapPin from '../../../../content/images/green-def.png';
 
 const SYMBOL_LAYOUT = {
   iconImage: mapPin,
-  iconSize: 0.65,
-  iconOffset: [0, -25],
+  iconSize: 0.15,
+  iconOffset: [0, -120],
   textField: ['get', 'title'],
   textFont: ['Open Sans Semibold', 'Arial Unicode MS Bold'],
   textSize: 16,

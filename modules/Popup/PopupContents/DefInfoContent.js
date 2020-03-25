@@ -12,7 +12,11 @@ import {
 import {connect} from 'react-redux';
 import LoadingSpinner from '../../../shared/LoadingSpinner';
 import {fetchSingleItem} from '../../../store/api';
-import {setPopupData, setMapParameters} from '../../../store/actions';
+import {
+  setPopupData,
+  setMapParameters,
+  setDestination
+} from '../../../store/actions';
 import {nearestDefsSelector} from '../../../store/reducer';
 import getFromMocks from '../../../store/api/getFromMocks';
 
@@ -21,7 +25,8 @@ const DefInfoContent = ({
   setPopupData,
   setMapParameters,
   featureCollection,
-  userLocation
+  userLocation,
+  setDestination
 }) => {
   const [currentDef, setCurrentDef] = useState({});
   useEffect(() => {
@@ -65,6 +70,7 @@ const DefInfoContent = ({
       coordinates: near.coordinates,
       zoom: 15
     });
+    setDestination(near.coordinates);
   };
 
   const phoneRenders =
@@ -121,7 +127,8 @@ export default connect(
   }),
   dispatch => ({
     setPopupData: data => dispatch(setPopupData(data)),
-    setMapParameters: map => dispatch(setMapParameters(map))
+    setMapParameters: map => dispatch(setMapParameters(map)),
+    setDestination: destination => dispatch(setDestination(destination))
   })
 )(DefInfoContent);
 
