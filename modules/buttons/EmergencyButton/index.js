@@ -67,26 +67,24 @@ const EmergencyButton = ({
       }
     ).start();
   }, []);
-
+  const buttonStyle = {
+    ...styles.emergencyBtnBleep,
+    width: emergencyBleepWidth,
+    height: emergencyBleepWidth,
+    borderRadius: Animated.divide(emergencyBleepWidth, 2),
+    opacity: emergencyOpacity,
+    transform: [
+      {
+        translateX: Animated.divide(emergencyBleepWidth, -2)
+      },
+      {
+        translateY: Animated.divide(emergencyBleepWidth, -2)
+      }
+    ]
+  };
   return (
     <View style={styles.emergencyButtonHolder}>
-      <Animated.View
-        style={{
-          ...styles.emergencyBtnBleep,
-          width: emergencyBleepWidth,
-          height: emergencyBleepWidth,
-          borderRadius: Animated.divide(emergencyBleepWidth, 2),
-          opacity: emergencyOpacity,
-          transform: [
-            {
-              translateX: Animated.divide(emergencyBleepWidth, -2)
-            },
-            {
-              translateY: Animated.divide(emergencyBleepWidth, -2)
-            }
-          ]
-        }}
-      />
+      <Animated.View style={buttonStyle} />
 
       <TouchableOpacity style={styles.emergencyButton} onPress={emergencyPress}>
         <Text style={styles.emButtonText}>

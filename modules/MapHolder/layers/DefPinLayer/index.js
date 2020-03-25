@@ -15,11 +15,12 @@ const DefPinLayer = ({setMapParameters, fetchingDefs, defs, setPopupData}) => {
     createGeoJsonFeatureCollection(defs) || defaultShapeCollection;
   const defPinPress = ({nativeEvent}) => {
     const feature = nativeEvent.payload;
+    const {coordinates} = feature.geometry;
     setMapParameters({
-      coordinates: feature.geometry.coordinates,
+      coordinates,
       zoom: 15
     });
-    setPopupData({id: feature.id});
+    setPopupData({id: feature.id, coordinates});
   };
 
   return (

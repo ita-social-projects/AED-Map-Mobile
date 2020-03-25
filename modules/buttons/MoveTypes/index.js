@@ -8,25 +8,11 @@ import {
   Image
 } from 'react-native';
 import getDirectionData from '../../../getDirectionData';
-import {setDirectionData} from '../../../store/actions';
+import {setDirectionData, setDestination} from '../../../store/actions';
+import {additionalStyle} from './consts';
 
-const additionalStyle = {
-  driving: {
-    lineColor: '#00f',
-    lineDasharray: [3, 0]
-  },
-  cycling: {
-    lineColor: '#00f',
-    lineDasharray: [2, 2]
-  },
-  walking: {
-    lineColor: '#00f',
-    lineDasharray: [1, 3]
-  }
-};
-
-const MoveTypes = ({origin, destination, setDirectionData}) => {
-  const [directionValue] = useState(new Animated.ValueXY({x: -160, y: 0}));
+const MoveTypes = ({origin, destination, setDestination, setDirectionData}) => {
+  const [directionValue] = useState(new Animated.ValueXY({x: -200, y: 0}));
   const [directionType, setDirectionType] = useState(null);
   useEffect(() => {
     if (directionType) {
@@ -40,6 +26,7 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
 
   const displayWayBasedOnType = async () => {
     if (destination) {
+      setDirectionData({geoData: null});
       const geoData = await getDirectionData(
         origin,
         destination,
@@ -60,7 +47,7 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
       }).start();
     } else {
       Animated.spring(directionValue, {
-        toValue: {x: -160, y: 0},
+        toValue: {x: -200, y: 0},
         speed: 15
       }).start();
     }
@@ -105,6 +92,21 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
           />
         </View>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setDirectionData({
+            geoData: null
+          });
+          setDestination(null);
+        }}
+      >
+        <View style={styles.closeTypeButton}>
+          <Image
+            style={styles.driveImg}
+            source={require('../../../content/images/close_cross.png')}
+          />
+        </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -112,7 +114,8 @@ const MoveTypes = ({origin, destination, setDirectionData}) => {
 export default connect(
   state => ({origin: state.origin, destination: state.destination}),
   dispatch => ({
-    setDirectionData: data => dispatch(setDirectionData(data))
+    setDirectionData: data => dispatch(setDirectionData(data)),
+    setDestination: data => dispatch(setDestination(data))
   })
 )(MoveTypes);
 
@@ -121,15 +124,21 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#282c34',
     position: 'absolute',
-    left: -160,
+    left: -200,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: 160
+    width: 200
   },
   driveTypeButton: {
     width: 40,
     height: 40,
     padding: 3,
+    textAlign: 'center'
+  },
+  closeTypeButton: {
+    width: 40,
+    height: 40,
+    padding: 5,
     textAlign: 'center'
   },
   driveImg: {
