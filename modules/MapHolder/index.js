@@ -39,6 +39,7 @@ const MapHolder = ({
       setUserLocation(location);
     });
   }, []);
+
   const longMapPress = event => {
     const {coordinates} = event.geometry;
     if (!destination) {
@@ -50,6 +51,7 @@ const MapHolder = ({
       setDestination(null);
     }
   };
+
   const shortMapPress = () => {
     setPopupData(null);
   };

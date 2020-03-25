@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {connect} from 'react-redux';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import Popup from '../Popup';

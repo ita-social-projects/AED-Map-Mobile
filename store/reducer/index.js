@@ -49,6 +49,7 @@ const rootReducer = (state = initialState, {type, payload}) => {
       return {...state, userLocation: payload};
     }
     case SET_DESTINATION: {
+      console.log(payload);
       return {...state, destination: payload};
     }
     case SET_MAP_PARAMETERS: {
@@ -57,8 +58,10 @@ const rootReducer = (state = initialState, {type, payload}) => {
         mapParameters: payload
       };
     }
-    default:
+    default: {
+      console.log(payload);
       return state;
+    }
   }
 };
 
