@@ -15,7 +15,6 @@ const SetAsDestinationBtn = ({
   setDestination
 }) => {
   const setAsDestination = () => {
-    console.log(popupData);
     const {coordinates} = popupData;
     setDirectionData({geoData: null});
     setOrigin(userLocation);

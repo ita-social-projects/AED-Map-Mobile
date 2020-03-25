@@ -26,6 +26,7 @@ const MoveTypes = ({origin, destination, setDestination, setDirectionData}) => {
 
   const displayWayBasedOnType = async () => {
     if (destination) {
+      setDirectionData({geoData: null});
       const geoData = await getDirectionData(
         origin,
         destination,

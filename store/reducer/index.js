@@ -9,6 +9,7 @@ import {
   SUCCESS_LOAD_DATA,
   FAIL_LOAD_DATA
 } from '../consts';
+import destBetweenTwoPoints from '../../utils/destBetweenTwoPoints';
 
 const initialState = {
   directionData: {geoData: null},
@@ -49,7 +50,6 @@ const rootReducer = (state = initialState, {type, payload}) => {
       return {...state, userLocation: payload};
     }
     case SET_DESTINATION: {
-      console.log(payload);
       return {...state, destination: payload};
     }
     case SET_MAP_PARAMETERS: {
@@ -59,7 +59,6 @@ const rootReducer = (state = initialState, {type, payload}) => {
       };
     }
     default: {
-      console.log(payload);
       return state;
     }
   }
@@ -70,17 +69,12 @@ export const currentDefSelector = ({featureCollection, popupData}) => {
 };
 
 export const nearestDefsSelector = ({featureCollection, userLocation}) => {
-  console.log('mapping defs');
   return featureCollection
     .map(singleDef => {
-      const xLength = Math.abs(
-        userLocation[0] - singleDef.location.coordinates[0]
+      const pathLength = destBetweenTwoPoints(
+        userLocation,
+        singleDef.location.coordinates
       );
-      const yLength = Math.abs(
-        userLocation[1] - singleDef.location.coordinates[1]
-      );
-      const pathLength = Math.sqrt(xLength * xLength + yLength * yLength);
-
       return {
         id: singleDef._id,
         coordinates: singleDef.location.coordinates,
