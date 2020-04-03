@@ -1,4 +1,4 @@
-function destBetweenTwoPoints(pointA, pointB) {
+const destBetweenTwoPoints = (pointA, pointB) => {
   // Haversine_formula
   const R = 6378.137;
   let dLon = ((pointB[0] - pointA[0]) * Math.PI) / 180;
@@ -12,5 +12,5 @@ function destBetweenTwoPoints(pointA, pointB) {
   let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   let d = R * c;
   return d * 1000; // meters
-}
+};
 export default destBetweenTwoPoints;

@@ -136,9 +136,7 @@ const styles = StyleSheet.create({
   popupText: {
     fontSize: 20,
     color: '#fcfcfc',
-    borderColor: 'transparent',
-    borderBottomColor: '#fff',
-    borderWidth: 1,
+
     paddingBottom: 5,
     marginBottom: 5
   },
