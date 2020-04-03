@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {setUserLocation, setDirectionData} from '../../../../store/actions';
 import destBetweenTwoPoints from '../../../../utils/destBetweenTwoPoints';
 import getDirectionData from '../../../../getDirectionData';
+const maxDistanceGap = 10;
 
 const UserLocation = ({
   setMapParameters,
@@ -29,7 +30,7 @@ const UserLocation = ({
           userLocation,
           directionData.geoData.coordinates[0]
         );
-        if (distance > 10) {
+        if (distance > maxDistanceGap) {
           const {directionType, additionalStyle} = directionData;
           const geoData = await getDirectionData(
             userLocation,
